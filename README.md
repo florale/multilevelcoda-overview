@@ -1,1 +1,1 @@
-# multilevelcoda-package-paper
+This repository contains reproduction materials for the manuscript "Bayesian Multilevel Compositional Data Analysis with the R package multilevelcoda" by *Flora Le, Dorothea Dumuid, Tyman E. Stanford, and Joshua F. Wiley*.
