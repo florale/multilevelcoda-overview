@@ -1,0 +1,124 @@
+
+
+
+\documentclass[man, 12pt, floatsintext]{apa7}
+
+%% recommended packages
+\usepackage[american]{babel}
+%\usepackage{thumbpdf,lmodern}
+\usepackage[T1]{fontenc} 
+\usepackage{mathptmx}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{caption}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{orcidlink}
+\usepackage[frozencache=true,cachedir=minted-cache]{minted} 
+\usepackage{enumitem}
+\usepackage{makecell}
+\usepackage{adjustbox}
+\usepackage{multirow}
+\usepackage{mathtools}
+\usepackage{csquotes}
+\usepackage{xfrac}
+\usepackage[style=apa, citestyle=authoryear-comp, uniquelist=false, sorting=nyt, backend=biber, uniquename=false, hyperref=true, sortcites=false]{biblatex}
+\usepackage{bm}
+%\usepackage{newtxtext,newtxmath}
+\usepackage{setspace}
+\usepackage{listings}
+\usepackage{tabularx}
+%\usepackage{booktabs}
+%\usepackage[svgnames]{xcolor}
+
+\DeclareLanguageMapping{american}{american-apa}
+\DeclareUnicodeCharacter{0302}{\^{R}}
+\addbibresource{multilevelcoda-package-paper.bib}
+\DeclareDelimFormat{nameyeardelim}{\addcomma\space}
+\DeclareMathAlphabet{\pazocal}{OMS}{zplm}{m}{n}
+\SetMathAlphabet\pazocal{bold}{OMS}{zplm}{bx}{n}
+\definecolor{beige}{HTML}{FAF7F3}
+\definecolor{lightblue}{HTML}{E2EBF2}
+\definecolor{midblue}{HTML}{BFD3E2}
+\definecolor{navyblue}{HTML}{5784AA}
+\definecolor{blueberryblue}{HTML}{0041C2}
+
+\lstset{language=R,
+    basicstyle=\footnotesize\ttfamily\linespread{1}\selectfont,
+    otherkeywords={complr, brmcoda, substitution, summary, pivot\_coord, library, install\_github, head, devtools},
+    morekeywords={TRUE,FALSE},
+    deletekeywords={R, data,frame,length,as,character, library, transform\_type, logratio\_class, class, transform, sub, c, levels, sample, For, measures, is, scale, factor, on, split, sd, gaussian},
+    keywordstyle=\color{blueberryblue},
+    commentstyle=\color{DarkGreen},
+    stringstyle=\color{black},
+    numberstyle=\color{navyblue}
+    keepspaces = FALSE,
+    showstringspaces=false,
+    linewidth = \linewidth
+}
+\title{Supplementary Materials for \\ 
+Bayesian Multilevel Compositional Data Analysis with the R Package \textbf{\textit{multilevelcoda}}}
+\shorttitle{multilevelcoda R package}
+\author{
+Flora Le\orcidlink{0000-0003-0089-8167}$^1$, 
+Dorothea Dumuid\orcidlink{0000-0003-3057-0963}$^2$, 
+Tyman E. Stanford\orcidlink{0000-0002-8570-5493}$^2$, 
+Joshua F. Wiley\orcidlink{0000-0002-0271-6702}$^1$
+}
+\authorsaffiliations{
+$^1$School of Psychological Sciences{,} ,
+Monash University
+\\
+$^2$Alliance for Research in Exercise{,} Nutrition and Activity{,}
+Allied Health and Human Performance{,} ,
+University of South Australia
+}
+
+\begin{document}
+\maketitle
+\begin{table}[!htbp]
+  \caption{Priors Setting for Bayesian Multilevel Models with Compositional Predictors.}
+  \centering
+    {\renewcommand{\arraystretch}{1.25}% for the vertical padding
+    \setlength\tabcolsep{0pt}
+    \begin{tabular*}{\linewidth}{@{\extracolsep{\fill}} llr }
+    \toprule
+    Parameter &  Description  & Prior  \\
+    \midrule
+    \textbf{Population-level (Fixed)} && \\
+    $\gamma_0$  &     Intercept                  & student\_t(3, 2.6, 3.1) \\
+    $\beta{z{^{(b)}_{1    \pmb{\cdot} j}}}$ &
+    \makecell[l]{Longer sleep relative to \\
+    awake in bed, MVPA, LPA, and SB on average}  & flat           \\ 
+    $\beta{z{^{(b)}_{2    \pmb{\cdot} j}}}$ &
+    \makecell[l]{Longer time awake in bed relative to \\
+    MVPA, LPA, and SB on average}  & flat                         \\  
+    $\beta{z{^{(b)}_{3    \pmb{\cdot} j}}}$  &
+    \makecell[l]{Longer MVPA relative to \\
+    LPA, and SB on average} & flat                         \\
+    $\beta{z{^{(b)}_{4    \pmb{\cdot} j}}}$  &
+    \makecell[l]{Longer LPA relative to \\
+    SB on average}  & flat                         \\
+    $\beta{z{^{(w)}_{1ij}}}$ &
+    \makecell[l]{Longer-than-usual sleep relative to \\
+    awake in bed, MVPA, LPA, and SB on a given day}   & flat                         \\
+    $\beta{z{^{(w)}_{2ij}}}$  &
+    \makecell[l]{Longer-than-usual time awake in bed relative to \\
+    MVPA, LPA, and SB on a given day}    & flat                         \\
+    $\beta{z{^{(w)}_{3ij}}}$  &
+    \makecell[l]{Longer-than-usual MVPA relative to \\
+    LPA, and SB on a given day}    & flat                         \\   
+    $\beta{z{^{(w)}_{4ij}}}$ &
+    \makecell[l]{Longer-than-usual LPA relative to \\
+    SB on a given day}  & flat                         \\
+    \midrule
+    \textbf{Group-level (Random)} && \\
+    $\sigma_{u}$ & Intercept & student\_t(3, 0, 3.1)   \\
+    $\sigma_{\varepsilon}$ & Residual & student\_t(3, 0, 3.1)  \\
+    \bottomrule
+  \end{tabular*}}
+\label{tab-brmcoda-sbp-prior}
+\end{table}
+
+\end{document}
