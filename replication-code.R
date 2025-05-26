@@ -37,6 +37,13 @@
 # 
 # ## now close and restart R
 
+# please use multilevelcoda version 1.3.2 (latest on CRAN)
+install.packages("multilevelcoda", repos = "https://cloud.r-project.org/")
+
+# ## OR
+# require(devtools)
+# install_version("multilevelcoda", version = "1.3.2", repos = "http://cran.us.r-project.org")
+
 library(data.table)
 library(ggpubr)
 library(ggplot2)
@@ -55,6 +62,7 @@ library(multilevelcoda)
 # install_cmdstan()
 
 # helper functions -----------------------------
+## theme for multilevelcoda plots
 theme_multilevelcoda <- function() {
   hrbrthemes::theme_ipsum() +
     theme(
@@ -76,17 +84,14 @@ theme_multilevelcoda <- function() {
       legend.position    = "none"
     )
 }
-fill_multilevelcoda   <- c(`LPA` = "#BBA9A7", `MVPA` = "#FAF7F3", `SB` = "#CFDAE2", `TST` = "#647F9A", `WAKE` = "#8399AE")
+fill_multilevelcoda   <- c(`LPA` = "#D6CBCA", `MVPA` = "#E3DCDB", `SB` = "#BFD3E2", `TST` = "#8AAFCA", `WAKE` = "#8399AE")
 colour_multilevelcoda <- c(`LPA` = "#978787", `MVPA` = "#BBA9A7", `SB` = "#A1B2C2", `TST` = "#647F9A", `WAKE` = "#8399AE")
-fill2_multilevelcoda  <- c(`LPA` = "#978787", `MVPA` = "#BBA9A7", `SB` = "#A1B2C2", `TST` = "#647F9A", `WAKE` = "#8399AE")
 
-# Illustrations ----------------
+# Motivational Examples ----------------
 data(mcompd)
-data(psub)
-
 head(mcompd)
 
-# Transforming Multilevel Compositional Data ----------------------------------------------------
+# Compositional Data and their Log-ratio Transformations -------------------------------------------
 cilr <- complr(
   data = mcompd,
   parts = c("TST", "WAKE", "MVPA", "LPA", "SB"),
@@ -94,20 +99,44 @@ cilr <- complr(
   total = 1440
 )
 
+# take a look at the default sbp used in complr()
+cilr$sbp
+
 # a summary of complr object
 summary(cilr)
 
-# Fitting Bayesian Multilevel Models with Compositional Predictors ------------------------------------
+# list components within the complr object
+names(cilr)
+
+# Compositional Data with Multilevel Structure ----------------------------------------------------
+print(head(cilr$between_comp), digits = 2)
+print(head(cilr$within_comp), digits = 2)
+
+print(head(cilr$between_logratio), digits = 2)
+print(head(cilr$within_logratio), digits = 2)
+
+# rounded values were presented in the manuscript
+round(head(cilr$between_comp), 0)
+round(head(cilr$within_comp), 2)
+
+round(head(cilr$between_logratio), 2)
+round(head(cilr$within_logratio), 2)
+
+
+# Bayesian Multilevel Models with Compositional Predictors ------------------------------------
 m <- brmcoda(
   complr = cilr,
-  formula = Stress ~ bilr1 + bilr2 + bilr3 + bilr4 +
-    wilr1 + wilr2 + wilr3 + wilr4 + (1 | ID),
+  formula = Stress ~ 
+    bilr1 + bilr2 + bilr3 + bilr4 +
+    wilr1 + wilr2 + wilr3 + wilr4 + 
+    Age + Female +
+    (1 | ID),
   warmup = 1000, iter = 2000, seed = 123,
   chains = 4, cores = 4, backend = "cmdstanr"
 )
 
 ## Model Summary
-summary(m)
+summary(m) 
 
 ## NOTE: results produced might not be identical as
 # the seed and chain identifier determine the behavior of the underlying random number generator.
@@ -117,56 +146,64 @@ summary(m)
 
 ## Estimating and Interpreting Pivot Coordinate Coefficients
 m_coordinates <- pivot_coord(m, method = "rotate")
+
 summary(m_coordinates)
 
-# Running Multilevel Compositional Substitution Analysis ---------------------------------------
-sub_simple <- substitution(
+# Bayesian Multilevel Compositional Substitution Analysis ---------------------------------------
+sub_simple_between <- substitution(
   object = m,
-  delta = 1:10,
-  ref = "grandmean",
-  level = c("between", "within")
+  delta  = 1:10,
+  ref    = "grandmean",
+  level  = "between"
 )
 
-# check base pairwise substitutionå
-psub
+## obtain substitution model summary for 10-min reallocation
+print(summary(sub_simple_between, delta = 10, digits = 2), row.names = FALSE, class = FALSE)
 
-# obtain substitution model summary for 10-min reallocation
-print(summary(sub_simple, delta = 10, digits = 2), row.names = FALSE, class = FALSE)
+sub_simple_within <- substitution(
+  object = m,
+  delta  = 1:10,
+  ref    = "grandmean",
+  level  = "within"
+)
 
-# 5.4. Presenting substitution model results ------------------------------------------------------
-plot_between <- plot(sub_simple, to = "WAKE", ref = "grandmean", level = "between") +
-  scale_fill_manual(values = fill2_multilevelcoda) +
+## obtain substitution model summary for 10-min reallocation
+print(summary(sub_simple_within, delta = 10, digits = 2), row.names = FALSE, class = FALSE)
+
+## presenting substitution model results
+(plot_between <- plot(sub_simple_between, to = "WAKE", ref = "grandmean", level = "between") +
+  scale_fill_manual(values = fill_multilevelcoda) +
   scale_colour_manual(values = colour_multilevelcoda) +
   scale_x_continuous(limits = c(-10, 10),
                      breaks = c(-10, 0, 10),
                      labels = c(10, 0, 10)
   ) +
-  scale_y_continuous(limits = c(-0.08, 0.10),
-                     breaks = c(-0.05, 0, 0.05, 0.10),
+  scale_y_continuous(limits = c(-0.12, 0.13),
+                     breaks = c(-0.10, 0, 0.10),
   ) +
   labs(x = "Difference in time in bed at between level",
        y = "Difference in stress") +
   facet_wrap(ggplot2::vars(From, To),
              labeller = label_bquote(cols = .(as.character(From)) %<-% minutes %->% .(as.character(To))),
              strip.position = "bottom", ncol = 4) +
-  theme_multilevelcoda()
+  theme_multilevelcoda())
 
-plot_within <- plot(sub_simple, to = "WAKE", ref = "grandmean", level = "within") +
-  scale_fill_manual(values = fill2_multilevelcoda) +
+(plot_within <- plot(sub_simple_within, to = "WAKE", ref = "grandmean", level = "within") +
+  scale_fill_manual(values = fill_multilevelcoda) +
   scale_colour_manual(values = colour_multilevelcoda) +
   scale_x_continuous(limits = c(-10, 10),
                      breaks = c(-10, 0, 10),
                      labels = c(10, 0, 10)
   ) +
-  scale_y_continuous(limits = c(-0.075, 0.10),
-                     breaks = c(-0.05, 0, 0.05, 0.10),
+  scale_y_continuous(limits = c(-0.12, 0.12),
+                     breaks = c(-0.10, 0, 0.10),
   ) +
   labs(x = "Difference in time in bed at within level",
        y = "Difference in stress") +
   facet_wrap(ggplot2::vars(From, To),
              labeller = label_bquote(cols = .(as.character(From)) %<-% minutes %->% .(as.character(To))),
              strip.position = "bottom", ncol = 4) +
-  theme_multilevelcoda()
+  theme_multilevelcoda())
 
 grDevices::cairo_pdf(
   file = paste0("plot_sub", ".pdf"),
@@ -181,3 +218,4 @@ ggarrange(plot_between, plot_within,
           font.label = list(size = 13, color = "black", family = "Arial Narrow")
 ) #10x9
 dev.off()
+
