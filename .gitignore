@@ -38,3 +38,7 @@ vignettes/*.pdf
 .DS_Store
 
 multilevelcoda-overview.Rproj
+
+multilevelcoda-outcome
+
+plot_sub.pdf
