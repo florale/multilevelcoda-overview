@@ -89,7 +89,7 @@ colour_multilevelcoda <- c(`LPA` = "#978787", `MVPA` = "#BBA9A7", `SB` = "#A1B2C
 
 # Motivational Examples ----------------
 data(mcompd)
-head(mcompd)
+print(head(mcompd), row.names = FALSE)
 
 # Compositional Data and their Log-ratio Transformations -------------------------------------------
 cilr <- complr(
@@ -100,35 +100,34 @@ cilr <- complr(
 )
 
 # take a look at the default sbp used in complr()
-cilr$sbp
+get_sbp(cilr)
 
 # a summary of complr object
 summary(cilr)
 
-# list components within the complr object
+# names of the list elements in complr object
 names(cilr)
 
 # Compositional Data with Multilevel Structure ----------------------------------------------------
-print(head(cilr$between_comp), digits = 2)
-print(head(cilr$within_comp), digits = 2)
+head(cilr[["dataout"]][,c("bTST", "bWAKE", "bMVPA", "bLPA", "bSB")])
+head(cilr[["dataout"]][,c("wTST", "wWAKE", "wMVPA", "wLPA", "wSB")])
 
-print(head(cilr$between_logratio), digits = 2)
-print(head(cilr$within_logratio), digits = 2)
+head(cilr[["dataout"]][,c("bz1_1", "bz2_1", "bz3_1", "bz4_1")])
+head(cilr[["dataout"]][,c("wz1_1", "wz2_1", "wz3_1", "wz4_1")])
 
 # rounded values were presented in the manuscript
-round(head(cilr$between_comp), 0)
-round(head(cilr$within_comp), 2)
+print(round(head(cilr[["dataout"]][,c("bTST", "bWAKE", "bMVPA", "bLPA", "bSB")]), 0), row.names = FALSE)
+print(round(head(cilr[["dataout"]][,c("wTST", "wWAKE", "wMVPA", "wLPA", "wSB")]), 2), row.names = FALSE)
 
-round(head(cilr$between_logratio), 2)
-round(head(cilr$within_logratio), 2)
-
+print(round(head(cilr[["dataout"]][,c("bz1_1", "bz2_1", "bz3_1", "bz4_1")]), 2), row.names = FALSE)
+print(round(head(cilr[["dataout"]][,c("wz1_1", "wz2_1", "wz3_1", "wz4_1")]), 2), row.names = FALSE)
 
 # Bayesian Multilevel Models with Compositional Predictors ------------------------------------
 m <- brmcoda(
   complr = cilr,
   formula = Stress ~ 
-    bilr1 + bilr2 + bilr3 + bilr4 +
-    wilr1 + wilr2 + wilr3 + wilr4 + 
+    bz1_1 + bz2_1 + bz3_1 + bz4_1 +
+    wz1_1 + wz2_1 + wz3_1 + wz4_1 + 
     Age + Female +
     (1 | ID),
   warmup = 1000, iter = 2000, seed = 123,
